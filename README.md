@@ -1,4 +1,4 @@
-# Big-Data-Review-Analysis
+# Big Data Review Analysis
 Can tell you the difference between positive and negative movie reviews using Machine Learning.
 
 **Keep in mind that it took me several days/weeks and beers to create this project
@@ -48,4 +48,4 @@ You just need to ask nicely:
 ### Threaded functions
 **Currently these only work on the best computer system there is: MacOS**
 I can be so much faster when I use all the 4 cores of my brain. Call these and set me free
-  * ```sentiment.test.threaded``` => Dare to test me. Progressbar currently NOT showing
+  * ```sentiment.test.threaded()``` => Dare to test me. Progressbar currently NOT showing
