@@ -1,6 +1,7 @@
+PROCESSES <- ifelse(!is.na(detectCores()), detectCores(), 1)
+
 sentiment.test.threaded <- function(){
   env <- .GlobalEnv
-  this <- new.env(parent = env)
   
   cat("Ohh so you want to test me?\n")
   cat("Well come on then. Let's do this!\n\n")
@@ -27,24 +28,28 @@ sentiment.test.threaded <- function(){
   }
   score <- c()
   
-  cat("*Intensive thinking* Hmmmm...\n")
+  cat("*Intensive thinking* Hmmmm... (No progressbar will be shown, be patient)\n")
   
   
-  worker <- function(i, env, prog){
-    scr <- sentiment.calc(set[i,]$review, progress = FALSE)
-    env$setTxtProgressBar(prog, i)
+  worker <- function(i){
+    scr <- (sentiment.calc(set[i,]$review, progress = FALSE)==as.integer(set[i,]$sentiment))
     return(scr)
   }
   
-  prog <- txtProgressBar(min = (MIN-1), max = MAX, style = 3)
-  setTxtProgressBar(prog, (MIN-1))
+  time.start <- Sys.time()
+  #progress <- txtProgressBar(min = (MIN-1), max = MAX, style = 3, initial = (MIN-1))
   
-  score <- unlist(mcmapply(worker, MIN:MAX, MoreArgs = list(env, prog), mc.cores = 4))
+  score <- mcmapply(worker, MIN:MAX, mc.cores = PROCESSES)
   
-  close(prog)
+  time.end <- Sys.time()
+  #close(progress)
   cat("Phoee... Finally done. Hope I did well...\n")
   
-  score <- as.integer(mean(score)*100)
+  cat("It took me", format(time.end - time.start, format = "%H:%M:%S"), "\n")
+  
+  score <- unlist(score)
+  
+  score <- as.integer(mean(score) * 100)
   
   if(score > 80){
     cat(paste0("OMG! I got ", as.character(score), "% correct!\n"))

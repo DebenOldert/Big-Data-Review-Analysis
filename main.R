@@ -68,6 +68,7 @@ sentiment.test <- function(){
   }
   score <- c()
   
+  time.start <- Sys.time()
   cat("*Intensive thinking* Hmmmm...\n")
   
   progress <- txtProgressBar(min = (MIN - 1), max = MAX, style = 3)
@@ -79,9 +80,13 @@ sentiment.test <- function(){
     setTxtProgressBar(progress, i)
   }
   
+  time.end <- Sys.time()
+  
   close(progress)
   
   cat("Phoee... Finally done. Hope I did well...\n")
+  
+  cat("It took me", format(time.end - time.start, format = "%H:%M:%S"), "\n")
   
   score <- as.integer(mean(score)*100)
 
@@ -89,7 +94,7 @@ sentiment.test <- function(){
     cat(paste0("OMG! I got ", as.character(score), "% correct!\n"))
   }
   else{
-    cat(paste0("Hmm. I'm not happy with a score of ", as.character(score), "%\n"))
+    cat(paste0("Hmm. I'm not quite happy with a score of ", as.character(score), "%\n"))
   }
   
   return(score)
@@ -106,6 +111,7 @@ sentiment.calc <- function(str, progress=TRUE) {
   }
   
   if(progress){
+    time.start <- Sys.time()
     cat("Let me think...\n")
     prog <- txtProgressBar(0, (length(spl)-SENSITIVITY+1), style = 3)
   }
@@ -123,6 +129,8 @@ sentiment.calc <- function(str, progress=TRUE) {
   
   if(progress){
     close(prog)
+    time.end <- Sys.time()
+    cat("It took me", format(time.end - time.start, format = "%H:%M:%S"), "\n")
   
     if(pos >= neg){
       cat("This must be a POSITIVE review\n")
