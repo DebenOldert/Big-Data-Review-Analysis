@@ -2,7 +2,7 @@ library(readr)
 library(dplyr)
 library(stringr)
 library(parallel)
-
+source("threaded.R")
 SENSITIVITY <- 4
 
 #MAX <- nrow(DATA1)
@@ -10,6 +10,13 @@ MAX <- 500
 
 LEARNED.POSITIVE <- paste(getwd(), "learned_positive.csv", sep = "/")
 LEARNED.NEGATIVE <- paste(getwd(), "learned_negative.csv", sep = "/")
+
+cat("Hey there! My name is Naiba. Nice to meet you.\n")
+cat("Thanks to the magic of multi-threading I have", PROCESSES, "brains (CPU). But this only works under a UNIX environment (e.g. MacOS).\n")
+cat("Don't you even dare to call the *.threaded functions in a windwows environment.\n")
+cat("If you have any question about me, just go to:\n")
+cat("https://github.com/DebenOldert/Big-Data-Review-Analysis/blob/master/README.md\n")
+cat("But that's enough trashtalk. Let's do this!")
 
 sentiment.train <- function(str, sen){
   env <- .GlobalEnv
