@@ -1,3 +1,14 @@
+# ##########
+# Written by: Deben Oldert
+# 
+# Keep in mind that it took me several days/weeks and beers to make this.
+# So please give me some credit. Naiba and I won't bite.
+# 
+# This program is called Naiba.
+# She can tell you and learn if movie ratings are positive or negative
+# 
+# #########
+
 PROCESSES <- ifelse(!is.na(detectCores()), detectCores(), 1)
 
 sentiment.test.threaded <- function(){
@@ -37,16 +48,14 @@ sentiment.test.threaded <- function(){
   }
   
   time.start <- Sys.time()
-  #progress <- txtProgressBar(min = (MIN-1), max = MAX, style = 3, initial = (MIN-1))
   
   score <- mcmapply(worker, MIN:MAX, mc.cores = PROCESSES)
   
   time.end <- Sys.time()
-  #close(progress)
+  
   cat("Phoee... Finally done. Hope I did well...\n")
   
   cat("It took me", format(time.end - time.start, format = "%H:%M:%S"), "\n")
-  
   score <- unlist(score)
   
   score <- as.integer(mean(score) * 100)

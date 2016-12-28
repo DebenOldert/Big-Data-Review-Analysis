@@ -1,3 +1,14 @@
+# ##########
+# Written by: Deben Oldert
+# 
+# Keep in mind that it took me several days/weeks and beers to make this.
+# So please give me some credit. Naiba and I won't bite.
+# 
+# This program is called Naiba.
+# She can tell you and learn if movie ratings are positive or negative
+# 
+# #########
+
 library(readr)
 library(dplyr)
 library(stringr)
@@ -5,11 +16,8 @@ library(parallel)
 source("threaded.R")
 SENSITIVITY <- 4
 
-#MAX <- nrow(DATA1)
-MAX <- 500
-
-LEARNED.POSITIVE <- paste(getwd(), "learned_positive.csv", sep = "/")
-LEARNED.NEGATIVE <- paste(getwd(), "learned_negative.csv", sep = "/")
+LEARNED.POSITIVE <- paste(getwd(), "learned_positive_5000S.csv", sep = "/")
+LEARNED.NEGATIVE <- paste(getwd(), "learned_negative_5000S.csv", sep = "/")
 
 cat("Hey there! My name is Naiba. Nice to meet you.\n")
 cat("Thanks to the magic of multi-threading I have", PROCESSES, "brains (CPU). But this only works under a UNIX environment (e.g. MacOS).\n")
@@ -115,7 +123,6 @@ sentiment.calc <- function(str, progress=TRUE) {
   spl <- sentiment.split(toupper(str))
   pos <- 0
   neg <- 0
-  data <- data.frame(grp=character())
   
   if((length(spl)-SENSITIVITY+1) < 1){
     stop("I really need some more text to figure this one out.\n")
@@ -137,13 +144,6 @@ sentiment.calc <- function(str, progress=TRUE) {
     if(!is.na(mtc)){
       neg <- neg + env$negative.cnt[mtc]
     }
-    
-    # if(nrow(env$positive[env$positive==grp,]) == 1){
-    #   pos <- pos + env$positive[env$positive==grp,]$cnt
-    # }
-    # if(nrow(env$negative[env$negative==grp,]) == 1){
-    #   neg <- neg + env$negative[env$negative==grp,]$cnt
-    # }
     if(progress) setTxtProgressBar(prog, i)
   }
   
@@ -159,8 +159,6 @@ sentiment.calc <- function(str, progress=TRUE) {
       cat("This must be a NEGATIVE review\n")
     }
   }
-  print(pos)
-  print(neg)
   return(pos >= neg)
 }
 
@@ -187,8 +185,12 @@ learn.load <- function(){
   
   if(file.exists(LEARNED.POSITIVE) && file.exists(LEARNED.NEGATIVE)){
     if(console.confirm("I found out that I already learned something a while ago. Do you want to use that data?")){
-      pos <- read_csv(LEARNED.POSITIVE)
-      neg <- read_csv(LEARNED.NEGATIVE)
+      suppressMessages(suppressWarnings(
+        pos <- read_csv(LEARNED.POSITIVE)
+      ))
+      suppressMessages(suppressWarnings(
+        neg <- read_csv(LEARNED.NEGATIVE)
+      ))
       
       env$positive.cmb <- pos$cmb
       env$positive.cnt <- pos$cnt
@@ -234,21 +236,23 @@ set.import <- function(fullPath){
 }
 
 learn.teach <- function(){
+  env <- .GlobalEnv
+  
   if(console.confirm("Do you want to train me so I can be better?")){
     if(exists("positive.cmb") && exists("positive.cnt") && exists("negative.cmb") && exists("negative.cnt")){
       cat("Hmmm... I already know someting.\n")
       if(!console.confirm("Do you want me to continue to learn? (Append learning skillset)")){
-        positive.cmb <- c()
-        positive.cnt <- c()
-        negative.cmb <- c()
-        negative.cnt <- c()
+        env$positive.cmb <- c()
+        env$positive.cnt <- c()
+        env$negative.cmb <- c()
+        env$negative.cnt <- c()
       }
     }
     else{
-      positive.cmb <- c()
-      positive.cnt <- c()
-      negative.cmb <- c()
-      negative.cnt <- c()
+      env$positive.cmb <- c()
+      env$positive.cnt <- c()
+      env$negative.cmb <- c()
+      env$negative.cnt <- c()
     }
     
     set <- file.choose()
