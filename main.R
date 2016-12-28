@@ -23,19 +23,23 @@ sentiment.train <- function(str, sen){
   for(i in 1:(length(spl)-SENSITIVITY+1)){
     grp <- paste(spl[i:(i+SENSITIVITY-1)], collapse = ' ')
     if(sen == 1){
-      if(nrow(env$positive %>% filter(str_detect(cmb, grp))) == 1){
-        env$positive[env$positive$cmb==grp,]$cnt <- env$positive[env$positive$cmb==grp,]$cnt + 1
+      mtc <- match(grp, env$positive.cmb)
+      if(!is.na(mtc)){
+        env$positive.cnt[mtc] <- env$positive.cnt[mtc] + 1
       }
       else{
-        env$positive[(nrow(env$positive)+1), ] <- list(as.character(grp), 1)
+        env$positive.cmb <- c(env$positive.cmb, grp)
+        env$positive.cnt <- c(env$positive.cnt, 1)
       }
     }
     else{
-      if(nrow(env$negative %>% filter(str_detect(cmb, grp))) == 1){
-        env$negative[env$negative$cmb==grp,]$cnt <- env$negative[env$negative$cmb==grp,]$cnt + 1
+      mtc <- match(grp, env$negative.cmb)
+      if(!is.na(mtc)){
+        env$negative.cnt[mtc] <- env$negative.cnt[mtc] + 1
       }
       else{
-        env$negative[(nrow(env$negative)+1), ] <- list(as.character(grp), 1)
+        env$negative.cmb <- c(env$negative.cmb, grp)
+        env$negative.cnt <- c(env$negative.cnt, 1)
       }
     }
   }
@@ -118,12 +122,21 @@ sentiment.calc <- function(str, progress=TRUE) {
   for(i in 1:(length(spl)-SENSITIVITY+1)){
     grp <- paste(spl[i:(i+SENSITIVITY-1)], collapse = ' ')
     
-    if(nrow(env$positive[env$positive==grp,]) == 1){
-      pos <- pos + env$positive[env$positive==grp,]$cnt
+    mtc <- match(grp, env$positive.cmb)
+    if(!is.na(mtc)){
+      pos <- pos + env$positive.cnt[mtc]
     }
-    if(nrow(env$negative[env$negative==grp,]) == 1){
-      neg <- neg + env$negative[env$negative==grp,]$cnt
+    mtc <- match(grp, env$negative.cmb)
+    if(!is.na(mtc)){
+      neg <- neg + env$negative.cnt[mtc]
     }
+    
+    # if(nrow(env$positive[env$positive==grp,]) == 1){
+    #   pos <- pos + env$positive[env$positive==grp,]$cnt
+    # }
+    # if(nrow(env$negative[env$negative==grp,]) == 1){
+    #   neg <- neg + env$negative[env$negative==grp,]$cnt
+    # }
     if(progress) setTxtProgressBar(prog, i)
   }
   
@@ -139,8 +152,8 @@ sentiment.calc <- function(str, progress=TRUE) {
       cat("This must be a NEGATIVE review\n")
     }
   }
-  #print(pos)
-  #print(neg)
+  print(pos)
+  print(neg)
   return(pos >= neg)
 }
 
@@ -149,24 +162,32 @@ sentiment.split <- function(str){
 }
 
 learn.save <- function(){
-  env <- parent.frame()
+  env <- .GlobalEnv
   
   if(!file.exists(LEARNED.POSITIVE) || console.confirm("Positive learned file already exists. Overwrite?")){
-    write_csv(env$positive, LEARNED.POSITIVE)
+    pos <- data.frame(cmb=env$positive.cmb, cnt=env$positive.cnt)
+    write_csv(pos, LEARNED.POSITIVE)
   }
   if(!file.exists(LEARNED.NEGATIVE) || console.confirm("Negative learned file already exists. Overwrite?")){
-    write_csv(env$negative, LEARNED.NEGATIVE)
+    neg <- data.frame(cmb=env$negative.cmb, cnt=env$negative.cnt)
+    write_csv(neg, LEARNED.NEGATIVE)
   }
   
 }
 
 learn.load <- function(){
-  env <- parent.frame()
+  env <- .GlobalEnv
   
   if(file.exists(LEARNED.POSITIVE) && file.exists(LEARNED.NEGATIVE)){
     if(console.confirm("I found out that I already learned something a while ago. Do you want to use that data?")){
-      env$positive <- read_csv(LEARNED.POSITIVE)
-      env$negative <- read_csv(LEARNED.NEGATIVE)
+      pos <- read_csv(LEARNED.POSITIVE)
+      neg <- read_csv(LEARNED.NEGATIVE)
+      
+      env$positive.cmb <- pos$cmb
+      env$positive.cnt <- pos$cnt
+      env$negative.cmb <- neg$cmb
+      env$negative.cnt <- neg$cnt
+      
       return(TRUE)
     }
   }
@@ -199,22 +220,28 @@ console.ask <- function(str, type="string"){
 }
 
 set.import <- function(fullPath){
+  suppressMessages(suppressWarnings(
   if(endsWith(fullPath, ".tsv")) return(read_delim(fullPath, "\t", escape_backslash = TRUE, escape_double = FALSE, trim_ws = TRUE))
   else if(endsWith(fullPath, ".csv")) return(read_csv(fullPath, trim_ws = TRUE))
+  ))
 }
 
 learn.teach <- function(){
   if(console.confirm("Do you want to train me so I can be better?")){
-    if(exists("positive") && exists("negative")){
+    if(exists("positive.cmb") && exists("positive.cnt") && exists("negative.cmb") && exists("negative.cnt")){
       cat("Hmmm... I already know someting.\n")
       if(!console.confirm("Do you want me to continue to learn? (Append learning skillset)")){
-        positive <- data.frame(cmb=character(), cnt=integer(), stringsAsFactors = F)
-        negative <- data.frame(cmb=character(), cnt=integer(), stringsAsFactors = F)
+        positive.cmb <- c()
+        positive.cnt <- c()
+        negative.cmb <- c()
+        negative.cnt <- c()
       }
     }
     else{
-      positive <- data.frame(cmb=character(), cnt=integer(), stringsAsFactors = F)
-      negative <- data.frame(cmb=character(), cnt=integer(), stringsAsFactors = F)
+      positive.cmb <- c()
+      positive.cnt <- c()
+      negative.cmb <- c()
+      negative.cnt <- c()
     }
     
     set <- file.choose()
