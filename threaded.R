@@ -60,11 +60,11 @@ sentiment.test.threaded <- function(){
   
   score <- as.integer(mean(score) * 100)
   
-  if(score > 80){
+  if(score > 70){
     cat(paste0("OMG! I got ", as.character(score), "% correct!\n"))
   }
   else{
-    cat(paste0("Hmm. I'm not happy with a score of ", as.character(score), "%\n"))
+    cat(paste0("Hmm. I'm not quite happy with a score of ", as.character(score), "%\n"))
   }
   
   return(score)

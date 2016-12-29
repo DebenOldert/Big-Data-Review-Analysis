@@ -16,8 +16,8 @@ library(parallel)
 source("threaded.R")
 SENSITIVITY <- 4
 
-LEARNED.POSITIVE <- paste(getwd(), "learned_positive_5000S.csv", sep = "/")
-LEARNED.NEGATIVE <- paste(getwd(), "learned_negative_5000S.csv", sep = "/")
+LEARNED.POSITIVE <- paste(getwd(), "learned_positive_7000S.csv", sep = "/")
+LEARNED.NEGATIVE <- paste(getwd(), "learned_negative_7000S.csv", sep = "/")
 
 cat("Hey there! My name is Naiba. Nice to meet you.\n")
 cat("Thanks to the magic of multi-threading I have", PROCESSES, "brains (CPU). But this only works under a UNIX environment (e.g. MacOS).\n")
@@ -109,7 +109,7 @@ sentiment.test <- function(){
   
   score <- as.integer(mean(score)*100)
 
-  if(score > 80){
+  if(score > 70){
     cat(paste0("OMG! I got ", as.character(score), "% correct!\n"))
   }
   else{
